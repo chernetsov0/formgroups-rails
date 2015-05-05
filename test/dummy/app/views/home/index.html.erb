@@ -1,0 +1,18 @@
+<%= form_for @person do |f| %>
+    <div class='field<%= ' field-errors' if @person.errors[:name].any? %>'>
+        <%= f.label :name, 'Name' %>
+        <%= f.text_field :name, placeholder: 'Name' %>
+
+        <% if @person.errors[:name].any? %>
+            <p><%= @person.errors[:name].first %></p>
+        <% end %>
+    </div>
+
+    <%= f.field :name do |name| %>
+        <%= name.label 'Name' %>
+        <%= name.text 'Name' %>
+        <% if name.errors.any? %>
+            <p><%= name.errors.first %></p>
+        <% end %>
+    <% end %>
+<% end %>
