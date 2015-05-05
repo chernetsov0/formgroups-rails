@@ -42,6 +42,12 @@ module FormGroups
       @template.text_area @method, validated_options(options)
     end
 
+    def select placeholder = nil, **options, &block
+      options['data-placeholder'] = placeholder
+
+      @template.select @method, nil, {}, validated_options(options), &block
+    end
+
     private
 
     def unvalidated_options options
@@ -49,7 +55,7 @@ module FormGroups
     end
 
     def validated_options options
-      options = unvalidated_options(options).merge(validations)
+      options = unvalidated_options(options).merge(validations) if FormGroups.map_validators
       options = options.merge('aria-invalid' => 'true') if errors.any?
 
       options
@@ -57,27 +63,10 @@ module FormGroups
 
     def validations
       validations = validators.map do |validator|
-        result = {}
+        result  = {}
 
-        case validator
-        when ActiveModel::Validations::LengthValidator
-          result['data-min'] = validator.options[:minimum] if validator.options[:minimum]
-          result['data-max'] = validator.options[:maximum] if validator.options[:maximum]
-        when ActiveRecord::Validations::PresenceValidator
-          result['data-required'] = 'true'
-          result['aria-required'] = 'true'
-        when EmailValidator
-          pattern = EmailValidator::PATTERN.source
-          pattern = pattern.sub('\\A','^')
-                           .sub('\\Z','$')
-                           .sub('\\z','$')
-                           .sub(/^\//,'')
-                           .sub(/\/[a-z]*$/,'')
-                           .gsub(/\(\?#.+\)/, '')
-                           .gsub(/\(\?-\w+:/,'(')
-
-          result['data-pattern'] = pattern
-        end
+        mapping = FormGroups.validator_mapping[validator.class.name]
+        mapping.call(validator, result) if mapping
 
         result
       end

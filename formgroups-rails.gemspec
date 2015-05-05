@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.email       = ["chernetsov0@gmail.com"]
   s.homepage    = "http://github.com/chernetsov0/formgroups-rails"
   s.summary     = "FormBuilder extensions for Rails"
-  s.description = "This gem for Ruby on Rails **4.0+** allows to create blocks for each field of the form.
-This allows to simplify syntax, show errors, add errors classes and so on."
+  s.description = "This gem for Ruby on Rails 4.0+ allows to create blocks for each field of the form.
+This allows to simplify syntax, show errors, add errors classes and validation attributes."
   s.license     = "MIT"
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "Rakefile"]

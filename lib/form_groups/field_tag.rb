@@ -10,8 +10,8 @@ module FormGroups
       html_options = @options.delete(:html) || {}
 
       classes = (html_options[:class] || '').split(' ')
-      classes << 'field'
-      classes << 'field-errors' if object.errors.has_key?(@method_name.to_sym)
+      classes << FormGroups.field_class
+      classes << FormGroups.field_error_class if object.errors.has_key?(@method_name.to_sym)
 
       html_options[:class] = classes
 
