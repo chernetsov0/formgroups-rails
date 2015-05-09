@@ -15,8 +15,8 @@ module FormGroups
     end
 
     OTHER_HELPERS.each do |selector|
-      define_method selector do |options = {}|
-        @template.send selector, @method, validated_options(options)
+      define_method selector do |value, options = {}|
+        @template.send selector, @method, value, validated_options(options)
       end
     end
 
@@ -31,12 +31,15 @@ module FormGroups
       @object.errors[@method]
     end
 
-    def label text, options = {}
-      @template.label @method, text, unvalidated_options(options)
+    def label text, sub_id = '', **options
+      full_id  = @method.to_s
+      full_id += "_#{sub_id}" unless sub_id.nil? or sub_id.to_s.empty?
+
+      @template.label full_id.to_sym, text, object_options.merge(options)
     end
 
     def text_area placeholder = nil, **options
-      options[:placeholder    ] = placeholder
+      options['placeholder'   ] = placeholder
       options['aria-multiline'] = true
 
       @template.text_area @method, validated_options(options)
@@ -45,39 +48,43 @@ module FormGroups
     def select placeholder = nil, **options, &block
       options['data-placeholder'] = placeholder
 
-      @template.select @method, nil, {}, validated_options(options), &block
+      @template.select @method, nil, object_options, html_options(options), &block
     end
 
     private
 
-    def unvalidated_options options
-      @default_options.merge(options).merge(object: @object)
-    end
-
-    def validated_options options
-      options = unvalidated_options(options).merge(validations) if FormGroups.map_validators
-      options = options.merge('aria-invalid' => 'true') if errors.any?
-
-      options
-    end
-
-    def validations
-      validations = validators.map do |validator|
-        result  = {}
-
-        mapping = FormGroups.validator_mapping[validator.class.name]
-        mapping.call(validator, result) if mapping
-
-        result
+      def object_options
+        @default_options.merge(object: @object)
       end
 
-      Hash[*validations.collect{ |h| h.to_a }.flatten]
-    end
+      def html_options options = {}
+        options = options.merge(validations) if FormGroups.map_validators
+        options = options.merge('aria-invalid' => 'true') if errors.any?
 
-    def validators
-      @object.class.validators.select do |validator|
-        validator.attributes.include? @method
+        options
       end
-    end
+
+      def validated_options options
+        object_options.merge html_options(options)
+      end
+
+      def validations
+        validations = validators.map do |validator|
+          result  = {}
+
+          mapping = FormGroups.validator_mapping.select { |v| validator.is_a? v }
+          mapping.each_value { |m| m.call validator, result }
+
+          result
+        end
+
+        Hash[*validations.collect{ |h| h.to_a }.flatten]
+      end
+
+      def validators
+        @object.class.validators.select do |validator|
+          validator.attributes.include? @method
+        end
+      end
   end
 end

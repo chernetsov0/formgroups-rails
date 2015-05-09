@@ -9,8 +9,15 @@ module FormGroups
         FieldTag.new(object_name, method, object, @template, self, options).render(&block)
       end
 
-      private
+      def id method
+          @sanitized_id ||= object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")
+      end
 
+      def value method
+        object[method]
+      end
+
+      private
         def objectify options
           options.merge(object: object)
         end
