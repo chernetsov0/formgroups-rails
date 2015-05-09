@@ -41,7 +41,7 @@ FormGroups.configure do |config|
   config.field_class = 'field'
   config.field_error_class = 'field-errors'
 
-  config.validator_mapping['ActiveModel::Validations::LengthValidator'] = Proc.new do |validator, html|
+  config.validator_mapping[ActiveModel::Validations::LengthValidator] = Proc.new do |validator, html|
     html['data-min'] = validator.options[:minimum] if validator.options[:minimum]
     html['data-max'] = validator.options[:maximum] if validator.options[:maximum]
   end
@@ -49,3 +49,5 @@ FormGroups.configure do |config|
   config.map_validators = false # Add this to turn off validators mapping
 end
 ```
+
+The `validator_mapping` option will check if given validator should be mapped with `#is_a?` method therefore hierarchy of mappings is possible.
